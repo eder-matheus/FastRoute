@@ -426,6 +426,21 @@ void DBWrapper::initNetlist(bool reroute)
   }
 }
 
+void DBWrapper::initClockNets() {
+  std::set<odb::dbNet*> _clockNets;
+
+  _openSta = _openroad->getSta();
+
+  _openSta->findClkNets(_clockNets);
+
+  std::cout << "[INFO] Found " << _clockNets.size() << " clock nets\n";
+
+  for (odb::dbNet* net : _clockNets) {
+    net->setSigType(odb::dbSigType::CLOCK);
+  }
+
+}
+
 void DBWrapper::makeItermPins(Net* net, odb::dbNet* db_net, Box& dieArea)
 {
   odb::dbTech* tech = _db->getTech();

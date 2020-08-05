@@ -80,8 +80,7 @@ void FastRouteKernel::init()
   _maxRoutingLayer = -1;
   _unidirectionalRoute = 0;
   _fixLayer = 0;
-  _clockNetRouting = false;
-  _overflowIterations = 500;
+  _overflowIterations = 50;
   _pdRevForHighFanout = -1;
   _allowOverflow = false;
   _estimateRC = false;
@@ -587,7 +586,8 @@ void FastRouteKernel::initializeNets(bool reroute)
 
   for (const Net& net : _netlist->getNets()) {
     if (net.getNumPins() > 1
-        && !(_clockNetRouting && net.getSignalType() != odb::dbSigType::CLOCK)
+        && !(_onlyClockNets && net.getSignalType() != odb::dbSigType::CLOCK)
+        && !(_onlySignalNets && net.getSignalType() == odb::dbSigType::CLOCK)
         && net.getNumPins() < std::numeric_limits<short>::max()) {
       validNets++;
     }
@@ -608,7 +608,8 @@ void FastRouteKernel::initializeNets(bool reroute)
         maxDegree = pin_count;
       }
 
-      if (!_clockNetRouting || net.getSignalType() == odb::dbSigType::CLOCK) {
+      if (!(_onlyClockNets && net.getSignalType() != odb::dbSigType::CLOCK)
+          && !(_onlySignalNets && net.getSignalType() == odb::dbSigType::CLOCK)) {
         if (pin_count >= std::numeric_limits<short>::max()) {
           std::cout << "[WARNING] FastRoute cannot handle net " << net.getName()
                     << " due to large number of pins\n";
