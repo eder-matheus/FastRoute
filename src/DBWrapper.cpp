@@ -53,8 +53,8 @@ namespace FastRoute {
 
 using ord::error;
 
-DBWrapper::DBWrapper(odb::dbDatabase* db, Netlist* netlist, Grid* grid)
-    : _db(db), _netlist(netlist), _grid(grid)
+DBWrapper::DBWrapper(ord::OpenRoad* openroad, Netlist* netlist, Grid* grid)
+    : _openroad(openroad), _netlist(netlist), _grid(grid), _db(openroad->getDb())
 {
 }
 
@@ -1145,8 +1145,7 @@ int DBWrapper::checkAntennaViolations(std::vector<FastRoute::NET> routing,
     error("odb::dbBlock not found\n");
   }
 
-  _arc = new antenna_checker::AntennaChecker;
-  _arc->setDb(_db);
+  _arc = _openroad->getAntennaChecker();
   _arc->load_antenna_rules();
 
   std::map<int, odb::dbTechVia*> defaultVias = getDefaultVias(maxRoutingLayer);
@@ -1366,12 +1365,10 @@ void DBWrapper::fixAntennas(std::string antennaCellName,
 
 void DBWrapper::legalizePlacedCells()
 {
-  _opendp = new opendp::Opendp();
-  _opendp->init(_db);
+  _opendp = _openroad->getOpendp();
   _opendp->setPaddingGlobal(2, 2);
   _opendp->detailedPlacement(0);
   _opendp->checkPlacement(false);
-  delete _opendp;
 }
 
 }  // namespace FastRoute
