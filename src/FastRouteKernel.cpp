@@ -334,11 +334,15 @@ void FastRouteKernel::runAntennaAvoidanceFlow()
   _fastRoute->run(*globalRoute);
 
   addRemainingGuides(globalRoute);
+  connectPadPins(globalRoute);
+  
   for (FastRoute::NET route : *globalRoute) {
     originalRoute->push_back(route);
   }
 
-  connectPadPins(globalRoute);
+  for (FastRoute::NET &netRoute : *globalRoute) {
+    mergeSegments(netRoute);
+  }
 
   getPreviousCapacities(_minRoutingLayer);
   addLocalConnections(globalRoute);
@@ -372,7 +376,12 @@ void FastRouteKernel::runAntennaAvoidanceFlow()
     _fastRoute->initAuxVar();
     _fastRoute->run(*newRoute);
     addRemainingGuides(newRoute);
+    connectPadPins(newRoute);
     mergeResults(newRoute);
+  }
+
+  for (FastRoute::NET& netRoute : *_result) {
+    mergeSegments(netRoute);
   }
 }
 
