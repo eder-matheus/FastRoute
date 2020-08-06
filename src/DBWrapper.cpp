@@ -1145,7 +1145,7 @@ void DBWrapper::commitGlobalSegmentsToDB(std::vector<FastRoute::NET> routing,
   }
 }
 
-int DBWrapper::checkAntennaViolations(std::vector<FastRoute::NET> routing,
+int DBWrapper::checkAntennaViolations(const std::vector<FastRoute::NET>* routing,
                                       int maxRoutingLayer)
 {
   if (!_chip) {
@@ -1180,7 +1180,7 @@ int DBWrapper::checkAntennaViolations(std::vector<FastRoute::NET> routing,
     dbNets[netName] = currNet;
   }
 
-  for (FastRoute::NET netRoute : routing) {
+  for (FastRoute::NET netRoute : *routing) {
     std::string netName = netRoute.name;
 
     odb::dbWire* wire = odb::dbWire::create(dbNets[netName]);
