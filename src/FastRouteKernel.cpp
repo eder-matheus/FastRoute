@@ -369,10 +369,10 @@ void FastRouteKernel::runAntennaAvoidanceFlow()
 
 void FastRouteKernel::runClockNetsRouteFlow()
 {
-  std::vector<FastRoute::NET> clockNetsRoute;
+  std::vector<FastRoute::NET> *clockNetsRoute = new std::vector<FastRoute::NET>;
   _fastRoute->setVerbose(0);
-  _fastRoute->run(clockNetsRoute);
-  addRemainingGuides(&clockNetsRoute);
+  _fastRoute->run(*clockNetsRoute);
+  addRemainingGuides(clockNetsRoute);
 
   getPreviousCapacities(_minLayerForClock);
 
@@ -388,7 +388,9 @@ void FastRouteKernel::runClockNetsRouteFlow()
   addRemainingGuides(_result);
 
   _result->insert(
-      _result->begin(), clockNetsRoute.begin(), clockNetsRoute.end());
+      _result->begin(), clockNetsRoute->begin(), clockNetsRoute->end());
+
+  delete clockNetsRoute;
 }
 
 void FastRouteKernel::estimateRC()
