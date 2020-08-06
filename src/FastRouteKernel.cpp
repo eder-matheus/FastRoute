@@ -343,20 +343,23 @@ void FastRouteKernel::runAntennaAvoidanceFlow()
   getPreviousCapacities(_minRoutingLayer);
   addLocalConnections(globalRoute);
 
+  int violationsCnt
+      = _dbWrapper->checkAntennaViolations(globalRoute, _maxRoutingLayer);
+
+  std::vector<odb::dbNet*> dirtyNets = _dbWrapper->getDirtyNets();
+
   resetResources();
 
   for (FastRoute::NET gr : *originalRoute) {
     _result->push_back(gr);
   }
 
-  int violationsCnt
-      = _dbWrapper->checkAntennaViolations(globalRoute, _maxRoutingLayer);
-
   if (violationsCnt > 0) {
-    _dbWrapper->fixAntennas(_diodeCellName, _diodePinName);
-    _dbWrapper->legalizePlacedCells();
     _reroute = true;
     startFastRoute();
+    _dbWrapper->setDirtyNets(dirtyNets);
+    _dbWrapper->fixAntennas(_diodeCellName, _diodePinName);
+    _dbWrapper->legalizePlacedCells();
     _fastRoute->setVerbose(0);
     std::cout << "[INFO] #Nets to reroute: " << _fastRoute->getNets().size()
               << "\n";

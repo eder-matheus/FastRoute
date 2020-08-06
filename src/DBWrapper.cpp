@@ -401,7 +401,7 @@ void DBWrapper::initNetlist(bool reroute)
   }
 
   if (reroute) {
-    nets = dirtyNets;
+    nets = _dirtyNets;
   }
 
   // Sort nets so guide file net order is consistent.
@@ -1222,7 +1222,7 @@ int DBWrapper::checkAntennaViolations(const std::vector<FastRoute::NET>* routing
         = _arc->get_net_antenna_violations(dbNets[netName]);
     if (netViol.size() > 0) {
       antennaViolations[dbNets[netName]->getConstName()] = netViol;
-      dirtyNets.push_back(dbNets[netName]);
+      _dirtyNets.push_back(dbNets[netName]);
     }
     if (wire != nullptr) {
       odb::dbWire::destroy(wire);

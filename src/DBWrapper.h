@@ -96,6 +96,8 @@ class DBWrapper
   void legalizePlacedCells();
   void setDB(unsigned idx) { _db = odb::dbDatabase::getDatabase(idx); }
   void setSelectedMetal(int metal) { selectedMetal = metal; }
+  std::vector<odb::dbNet*> getDirtyNets() { return _dirtyNets; }
+  void setDirtyNets(std::vector<odb::dbNet*> dirtyNets) { _dirtyNets = dirtyNets; }
 
  private:
   typedef int coord_type;
@@ -132,7 +134,7 @@ class DBWrapper
   std::map<std::string, odb::dbNet*> dbNets;
   std::map<std::string, std::vector<VINFO>>
       antennaViolations;
-  std::vector<odb::dbNet*> dirtyNets;
+  std::vector<odb::dbNet*> _dirtyNets;
 };
 
 std::string getITermName(odb::dbITerm* iterm);
