@@ -377,6 +377,7 @@ void DBWrapper::computeSpacingsAndMinWidth(int maxLayer)
 
 void DBWrapper::initNetlist(bool reroute)
 {
+  initClockNets();
   Box dieArea(_grid->getLowerLeftX(),
               _grid->getLowerLeftY(),
               _grid->getUpperRightX(),
