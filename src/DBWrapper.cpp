@@ -1108,6 +1108,8 @@ void DBWrapper::commitGlobalSegmentsToDB(std::vector<FastRoute::NET> routing,
 
   std::map<int, odb::dbTechVia*> defaultVias = getDefaultVias(maxRoutingLayer);
 
+  std::map<std::string, odb::dbNet*> dbNets = createMapForDbNets();
+
   for (FastRoute::NET netRoute : routing) {
     std::string netName = netRoute.name;
     odb::dbWire* wire = odb::dbWire::create(dbNets[netName]);
@@ -1166,19 +1168,7 @@ int DBWrapper::checkAntennaViolations(const std::vector<FastRoute::NET>* routing
 
   std::map<int, odb::dbTechVia*> defaultVias = getDefaultVias(maxRoutingLayer);
 
-  odb::dbSet<odb::dbNet> nets = block->getNets();
-
-  for (odb::dbNet* currNet : nets) {
-    std::string netName = currNet->getConstName();
-
-    if (currNet->getSigType().getValue() == odb::dbSigType::POWER
-        || currNet->getSigType().getValue() == odb::dbSigType::GROUND
-        || currNet->isSpecial() || currNet->getSWires().size() > 0) {
-      continue;
-    }
-
-    dbNets[netName] = currNet;
-  }
+  std::map<std::string, odb::dbNet*> dbNets = createMapForDbNets();
 
   for (FastRoute::NET netRoute : *routing) {
     std::string netName = netRoute.name;
@@ -1335,6 +1325,22 @@ void DBWrapper::getFixedInstances(r_tree& fixedInsts)
   }
 }
 
+std::map<std::string, odb::dbNet*> DBWrapper::createMapForDbNets() {
+  odb::dbBlock* block = _chip->getBlock();
+  std::map<std::string, odb::dbNet*> dbNets;
+  for (odb::dbNet* currNet : block->getNets()) {
+    std::string netName = currNet->getConstName();
+
+    if (currNet->getSigType().getValue() != odb::dbSigType::POWER
+        && currNet->getSigType().getValue() != odb::dbSigType::GROUND
+        && !(currNet->isSpecial()) && currNet->getSWires().size() == 0) {
+      dbNets[netName] = currNet;
+    }
+  }
+
+  return dbNets;
+}
+
 void DBWrapper::fixAntennas(std::string antennaCellName,
                             std::string antennaPinName)
 {
@@ -1358,6 +1364,8 @@ void DBWrapper::fixAntennas(std::string antennaCellName,
       }
     }
   }
+
+  std::map<std::string, odb::dbNet*> dbNets = createMapForDbNets();
 
   for (auto const& violation : _antennaViolations) {
     odb::dbNet* net = dbNets[violation.first];
