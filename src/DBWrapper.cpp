@@ -430,7 +430,7 @@ void DBWrapper::initNetlist(bool reroute)
 void DBWrapper::initClockNets() {
   std::set<odb::dbNet*> _clockNets;
 
-  _openSta = _openroad->getSta();
+  sta::dbSta* _openSta = _openroad->getSta();
 
   _openSta->findClkNets(_clockNets);
 
@@ -1161,7 +1161,7 @@ int DBWrapper::checkAntennaViolations(const std::vector<FastRoute::NET>* routing
     error("odb::dbBlock not found\n");
   }
 
-  _arc = _openroad->getAntennaChecker();
+  antenna_checker::AntennaChecker* _arc = _openroad->getAntennaChecker();
   _arc->load_antenna_rules();
 
   std::map<int, odb::dbTechVia*> defaultVias = getDefaultVias(maxRoutingLayer);
@@ -1221,7 +1221,7 @@ int DBWrapper::checkAntennaViolations(const std::vector<FastRoute::NET>* routing
     std::vector<VINFO> netViol
         = _arc->get_net_antenna_violations(dbNets[netName]);
     if (netViol.size() > 0) {
-      antennaViolations[dbNets[netName]->getConstName()] = netViol;
+      _antennaViolations[dbNets[netName]->getConstName()] = netViol;
       _dirtyNets.push_back(dbNets[netName]);
     }
     if (wire != nullptr) {
@@ -1229,9 +1229,9 @@ int DBWrapper::checkAntennaViolations(const std::vector<FastRoute::NET>* routing
     }
   }
 
-  std::cout << "[INFO] #Antenna violations: " << antennaViolations.size()
+  std::cout << "[INFO] #Antenna violations: " << _antennaViolations.size()
             << "\n";
-  return antennaViolations.size();
+  return _antennaViolations.size();
 }
 
 void DBWrapper::insertDiode(odb::dbNet* net,
@@ -1359,7 +1359,7 @@ void DBWrapper::fixAntennas(std::string antennaCellName,
     }
   }
 
-  for (auto const& violation : antennaViolations) {
+  for (auto const& violation : _antennaViolations) {
     odb::dbNet* net = dbNets[violation.first];
     for (int i = 0; i < violation.second.size(); i++) {
       for (odb::dbITerm* sinkITerm : violation.second[i].iterms) {
@@ -1381,7 +1381,7 @@ void DBWrapper::fixAntennas(std::string antennaCellName,
 
 void DBWrapper::legalizePlacedCells()
 {
-  _opendp = _openroad->getOpendp();
+  opendp::Opendp* _opendp = _openroad->getOpendp();
   _opendp->setPaddingGlobal(2, 2);
   _opendp->detailedPlacement(0);
   _opendp->checkPlacement(false);

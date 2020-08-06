@@ -347,6 +347,8 @@ void FastRouteKernel::runAntennaAvoidanceFlow()
       = _dbWrapper->checkAntennaViolations(globalRoute, _maxRoutingLayer);
 
   std::vector<odb::dbNet*> dirtyNets = _dbWrapper->getDirtyNets();
+  std::map<std::string, std::vector<VINFO>> antennaViolations =
+                                            _dbWrapper->getAntennaViolations();
 
   resetResources();
 
@@ -356,8 +358,9 @@ void FastRouteKernel::runAntennaAvoidanceFlow()
 
   if (violationsCnt > 0) {
     _reroute = true;
-    startFastRoute();
     _dbWrapper->setDirtyNets(dirtyNets);
+    _dbWrapper->setAntennaViolations(antennaViolations);
+    startFastRoute();
     _dbWrapper->fixAntennas(_diodeCellName, _diodePinName);
     _dbWrapper->legalizePlacedCells();
     _fastRoute->setVerbose(0);
@@ -408,7 +411,6 @@ void FastRouteKernel::runClockNetsRouteFlow()
 void FastRouteKernel::estimateRC()
 {
   runFastRoute();
-  addRemainingGuides(_result);
 
   sta::dbSta* dbSta = _openroad->getSta();
   sta::Parasitics* parasitics = dbSta->parasitics();
@@ -589,9 +591,9 @@ void FastRouteKernel::initializeNets(bool reroute)
   checkPinPlacement();
   std::cout << "Checking pin placement... Done!\n";
 
-  std::cout << " > ----Checking sinks/source...\n";
+  std::cout << "Checking sinks/source...\n";
   checkSinksAndSource();
-  std::cout << " > ----Checking sinks/source... Done!\n";
+  std::cout << "Checking sinks/source... Done!\n";
 
   int validNets = 0;
 

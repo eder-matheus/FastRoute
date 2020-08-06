@@ -98,6 +98,11 @@ class DBWrapper
   void setSelectedMetal(int metal) { selectedMetal = metal; }
   std::vector<odb::dbNet*> getDirtyNets() { return _dirtyNets; }
   void setDirtyNets(std::vector<odb::dbNet*> dirtyNets) { _dirtyNets = dirtyNets; }
+  std::map<std::string, std::vector<VINFO>> getAntennaViolations()
+                                            { return _antennaViolations; }
+  void setAntennaViolations(std::map<std::string, std::vector<VINFO>>
+                            antennaViolations)
+                           { _antennaViolations = antennaViolations; }
 
  private:
   typedef int coord_type;
@@ -123,17 +128,14 @@ class DBWrapper
   int selectedMetal = 3;
   ord::OpenRoad* _openroad;
   odb::dbDatabase* _db;
-  sta::dbSta      *_openSta = nullptr;
   odb::dbChip* _chip;
   Netlist* _netlist;
   Grid* _grid;
   bool _verbose = false;
-  antenna_checker::AntennaChecker* _arc = nullptr;
-  opendp::Opendp* _opendp = nullptr;
 
   std::map<std::string, odb::dbNet*> dbNets;
   std::map<std::string, std::vector<VINFO>>
-      antennaViolations;
+      _antennaViolations;
   std::vector<odb::dbNet*> _dirtyNets;
 };
 
